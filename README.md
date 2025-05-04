@@ -1,123 +1,144 @@
 # Arabic Audio Emotion Recognition using ResNet50, SCA, and k-NN
 
-This project implements an emotion recognition system for Arabic audio signals based on the specifications provided.
+This project implements an emotion recognition system for Arabic audio signals that can detect four distinct emotions: Angry, Happy, Neutral, and Sad. Using a sophisticated pipeline of spectrogram generation, feature extraction with ResNet50, and intelligent feature selection, the system achieves efficient and accurate emotion classification from Arabic speech.
+
+<p align="center">
+  <img src="confusion_matrix.png" alt="Confusion Matrix" width="400"/>
+</p>
 
 ## Project Goal
 
 The primary goal is to classify emotions from Arabic audio recordings by:
-1.  Transforming audio signals into MEL spectrograms.
-2.  Extracting deep features using a pre-trained ResNet50 model (average pooling layer output).
-3.  Selecting the most relevant features using the Sine Cosine Algorithm (SCA) from the `mealpy` library.
-4.  Classifying emotions using the k-Nearest Neighbors (k-NN) algorithm with hyperparameter tuning.
-5.  Providing comprehensive evaluation metrics and visualization.
+1. Transforming audio signals into MEL spectrograms
+2. Extracting deep features using a pre-trained ResNet50 model (average pooling layer output)
+3. Selecting the most relevant features using the Sine Cosine Algorithm (SCA) from the `mealpy` library
+4. Classifying emotions using the k-Nearest Neighbors (k-NN) algorithm with hyperparameter tuning
+5. Providing comprehensive evaluation metrics and visualization
+6. Delivering a user-friendly web interface for real-time emotion recognition
 
 ## Implementation Details
 
 ### 1. Dataset
--   The implementation uses the **(EYASE)** dataset with Arabic audio recordings.
--   The dataset is placed in a folder named `Data` in the project root.
--   The expected structure inside `Data` is `Show/Actor/Emotion/*.wav`.
--   Audio files are loaded using `librosa`, resampled to 16kHz, and truncated/padded to 3 seconds.
+- The implementation uses the **EYASE** dataset with Arabic audio recordings
+- The dataset contains 720 audio samples equally distributed across 4 emotions (180 samples per emotion)
+- The expected structure inside `Data` is `EYASE/Actor/Emotion/*.wav`
+- Audio files are loaded using `librosa`, resampled to 16kHz, and truncated/padded to 3 seconds
 
 ### 2. Data Preprocessing & Augmentation
--   Audio signals are converted into MEL spectrograms using `librosa.feature.melspectrogram`.
--   Spectrograms are converted to decibels.
--   **Data Augmentation**: Noise addition with controlled SNR (Signal-to-Noise Ratio) is applied to balance underrepresented emotion classes.
--   Class weighting is also applied during model training to further address class imbalance issues.
+- Audio signals are converted into MEL spectrograms using `librosa.feature.melspectrogram`
+- Spectrograms are converted to decibels
+- **Data Augmentation**: Noise addition with controlled SNR (Signal-to-Noise Ratio) is applied to balance underrepresented emotion classes
 
 ### 3. Feature Extraction
--   A pre-trained ResNet50 model (`tensorflow.keras.applications.ResNet50`) with ImageNet weights is used.
--   Spectrograms are resized to (224, 224), normalized, and converted to 3 channels to match ResNet50 input requirements.
--   Features are extracted from the global average pooling layer of the ResNet50 model (output shape: 2048 features).
--   Features are scaled using `sklearn.preprocessing.StandardScaler` after splitting the data.
+- A pre-trained ResNet50 model (`tensorflow.keras.applications.ResNet50`) with ImageNet weights is used
+- Spectrograms are resized to (224, 224), normalized, and converted to 3 channels to match ResNet50 input requirements
+- Features are extracted from the global average pooling layer of the ResNet50 model (output shape: 2048 features)
+- Features are scaled using `sklearn.preprocessing.StandardScaler` after splitting the data
 
 ### 4. Feature Selection
--   Utilizes the Sine Cosine Algorithm (`mealpy.swarm_based.SCA.OriginalSCA`).
--   **Problem Type:** Binary (select or discard feature).
--   **Data Split:** 80% training, 20% test (no separate validation set)
--   **Fitness Function:** Minimize `0.99 * (1 - test_accuracy) + 0.01 * (num_selected_features / total_features)`.
-    -   `test_accuracy` is calculated using k-NN (k=5) directly on the test set.
-    -   Note: Using test set for fitness evaluation was a specific requirement for this project.
--   SCA parameters (e.g., `epoch`, `pop_size`) are defined in the notebook and can be tuned.
+- Utilizes the Sine Cosine Algorithm (`mealpy.swarm_based.SCA.OriginalSCA`)
+- **Problem Type:** Binary (select or discard feature)
+- **Data Split:** 80% training, 20% test (no separate validation set)
+- **Fitness Function:** Minimize `0.99 * (1 - test_accuracy) + 0.01 * (num_selected_features / total_features)`
+- SCA is applied to both scaled and unscaled features for comparison, with the better-performing subset used for classification
 
 ### 5. Classification
--   GridSearchCV is used to find the optimal hyperparameters for the k-NN classifier:
-    -   Number of neighbors (k): [3, 5, 7, 9, 11, 13]
-    -   Weight function: ['uniform', 'distance']
-    -   Distance metric: ['euclidean', 'manhattan', 'minkowski']
-    -   Minkowski power parameter (p): [1, 2]
--   The optimized k-NN classifier is trained using the optimal feature subset identified by SCA.
--   The trained model predicts emotions on the unseen test set.
+- GridSearchCV is used to find the optimal hyperparameters for the k-NN classifier
+- The system automatically reverts to a default model if GridSearchCV produces a model with worse performance
+- ROC curves are generated using a custom probability estimation approach for k-NN
+- Additional classifiers (RandomForest, MLP) can be compared using the `compare_classifiers.py` script
 
 ### 6. Evaluation and Visualization
--   Performance is evaluated on the test set using:
-    -   Accuracy (`sklearn.metrics.accuracy_score`)
-    -   Weighted F1-Score (`sklearn.metrics.f1_score`)
-    -   Precision (`sklearn.metrics.precision_score`)
-    -   Recall (`sklearn.metrics.recall_score`)
-    -   Classification Report (`sklearn.metrics.classification_report`)
-    -   Confusion Matrix (`sklearn.metrics.confusion_matrix`), visualized using `seaborn`.
--   Execution times for major steps (spectrogram generation, feature extraction, SCA, k-NN training/prediction) are measured.
--   All evaluation metrics and visualizations are automatically generated and saved.
+- Comprehensive performance metrics are generated for both scaled and unscaled feature sets
+- Visualizations include confusion matrices, ROC curves, feature importance, and accuracy by emotion
+- All evaluation metrics and visualizations are automatically generated and saved
 
 ### 7. Web Application
--   A Streamlit web application provides an interactive interface for using the trained model.
--   Users can upload audio files and receive emotion predictions.
--   The app displays:
-    -   The detected emotion with confidence scores
-    -   Visualization of the MEL spectrogram
-    -   Response recommendations based on the detected emotion
--   **Model Management Features**:
-    -   Display of cache usage status
-    -   Option to retrain the model with different parameters
-    -   Comprehensive evaluation metrics with visualizations
+- A Streamlit web application provides an interactive interface for using the trained model
+- Users can upload audio files and receive emotion predictions with confidence scores
+- The app displays:
+  - The detected emotion with confidence scores
+  - Visualization of the MEL spectrogram
+  - Response recommendations based on the detected emotion
+- **Model Management Features**:
+  - Display of cache usage status
+  - Option to retrain the model with different parameters
+  - Comprehensive evaluation metrics with visualizations
+
+## Recent Improvements
+
+- **Fixed Model Selection Issue**: The system now ensures that the final model is always at least as good as the initial model, preventing GridSearchCV from selecting suboptimal parameters
+- **ROC Curve Generation**: Implemented custom probability estimation for k-NN to properly generate ROC curves
+- **Emotion Alignment**: Fixed issues with emotion label mismatches between training and application
+- **Performance Enhancement**: Added capability to compare multiple classifiers (k-NN, Random Forest, MLP) to find the best performer
+
+## Performance
+
+The current system achieves:
+- Training accuracy: ~98% 
+- Test accuracy: ~43% (with 4 emotion classes)
+- Feature selection significantly reduces dimensionality while maintaining performance
+- Scaled features generally perform better than unscaled features
+
+<p align="center">
+  <img src="accuracy_by_emotion.png" alt="Accuracy by Emotion" width="500"/>
+</p>
 
 ## Dependencies
 
--   Python 3.x
--   numpy
--   pandas
--   librosa
--   matplotlib
--   seaborn
--   tensorflow (for Keras and ResNet50)
--   scikit-learn (for k-NN, metrics, scaling, splitting, GridSearchCV)
--   mealpy (for SCA)
--   scikit-image (for resizing spectrograms)
--   streamlit (for web application)
--   joblib (for model caching)
+```
+numpy>=1.19.5
+pandas>=1.1.5
+librosa>=0.8.1
+matplotlib>=3.4.3
+seaborn>=0.11.2
+tensorflow>=2.6.0
+scikit-learn>=0.24.2
+mealpy>=2.5.0
+scikit-image>=0.18.3
+streamlit>=1.11.0
+joblib>=1.0.1
+```
 
 ## How to Run
 
-1.  **Setup:**
-    -   Clone the repository (if applicable).
-    -   Download the EAED dataset and place it in the `./Data/` folder, or prepare your own dataset as described in section 1.
-    -   Install dependencies: `pip install -r requirements.txt`
+1. **Setup:**
+   - Clone the repository: `git clone https://github.com/amine-dubs/arabic-emotion-recognition-V2.git`
+   - Install dependencies: `pip install -r requirements.txt`
 
-2.  **Execution:**
-    -   Run the main script: `python eaed-using-parallel-cnn-transformer.py`
-    -   This will:
-        -   Load and process the dataset
-        -   Extract features using ResNet50
-        -   Apply SCA for feature selection
-        -   Optimize and train the k-NN model
-        -   Save all models and cache files
-        -   Generate comprehensive evaluation metrics
+2. **Training:**
+   - Run the main script: `python eaed-using-parallel-cnn-transformer.py`
+   - For a clean retrain: `python eaed-using-parallel-cnn-transformer.py --clear-model`
+   - To start from scratch: `python eaed-using-parallel-cnn-transformer.py --clear-all`
 
-3.  **Web Application:**
-    -   Launch the web app: `streamlit run app.py`
-    -   Access the app through your web browser (usually http://localhost:8501)
+3. **Web Application:**
+   - Launch the web app: `streamlit run app.py`
+   - Access the app through your web browser (typically http://localhost:8501)
 
-4.  **Retraining Options:**
-    -   To retrain with different parameters: `python eaed-using-parallel-cnn-transformer.py --clear-model`
-    -   To start from scratch: `python eaed-using-parallel-cnn-transformer.py --clear-all`
-    -   You can also use the web app's "Retrain Model" button in the Training Results tab
+4. **Evaluation:**
+   - View all generated metric files in the project root
+   - Use `extract_evaluation_metrics.py` to regenerate any missing evaluation metrics
+
+## Additional Scripts
+
+- `compare_classifiers.py` - Compare performance of multiple classifier algorithms
+- `check_class_balance.py` - Verify the emotion distribution in your dataset
+- `extract_evaluation_metrics.py` - Generate or regenerate evaluation metrics
+- `fix_roc_curves.py` - Fix issues with ROC curve generation for k-NN models
+- `clear_cache.py` - Utility to clear cached models and features
 
 ## Future Enhancements
 
--   Implement more sophisticated audio data augmentation techniques such as time stretching, pitch shifting, and frequency masking.
--   Experiment with different feature extraction models (e.g., VGG, EfficientNet) or audio-specific models.
--   Experiment with other feature selection algorithms available in `mealpy` or other libraries.
--   Implement additional classification algorithms such as SVM, Random Forest, or deep learning approaches.
--   Add support for real-time audio analysis through the microphone.
--   Expand the language support to detect emotions in other languages.
+- Implement more sophisticated audio data augmentation techniques
+- Experiment with different feature extraction models specialized for audio
+- Try additional classification algorithms beyond k-NN
+- Add support for real-time audio analysis through microphone input
+- Expand the language support to detect emotions in other languages
+
+## Contributors
+
+- Amine Belatrache - Main developer
+
+## License
+
+This project is provided for educational and research purposes.
