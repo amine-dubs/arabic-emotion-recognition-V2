@@ -1,0 +1,32 @@
+
+•La reconnaissance des émotions à partir des signaux audio de la langue arabe:
+•L’idéee est de
+transformer les signaux
+audio aux spectogramme 
+•Appliquer Deep features (resnet50) (data extraction)
+•Appliquer sca (import from mealpy) for attribute selection, use this to minimise the fitness:
+Pop = (N,D)
+N = population size (number of solutions)
+D = number of original features (problem dimension)
+Initialisation:
+Ub = 1
+Lb = 0
+Pop = if( rand(N,D) * (1-0) + 0 > 0.5): 1 else 0
+population = (np.random.rand(pop_size, num_features) > 0.5).astype(int)
+
+Minimise fitness:
+Calculate accuracy using knn on the reduced dataset.
+80% training, 20% test
+Fitness = 0.99(1 - acc) + 0.01 * d/D
+D: number of original features 
+d: number of selected features 
+
+–use the best trained k-NN for further classification
+
+-Visualisations:
+Accuracy table, F score table, confusion matrix, roc...etc
+(If possible: Taux d'exécution (we will execute multiple times, for example after standardisation, before standardisation...etc))
+
+Use this code as a start:
+•Le code suivant applique parallel CNN avec transformer à partir des spectrogramme afin de détecter les émotions via le lien:
+https://www.kaggle.com/code/mohammedhassanain/eaed-using-parallel-cnn-transformer

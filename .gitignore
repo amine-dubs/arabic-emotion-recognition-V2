@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Virtual Environment
+venv/
+ENV/
+
+# VS Code
+.vscode/
+
+# Data and models (consider if you want to include these or not)
+# Uncomment if you want to exclude large data files
+# *.npy
+# *.joblib
+# *.pkl
+
+# Logs
+*.log
+
+# OS specific
+.DS_Store
+Thumbs.db
