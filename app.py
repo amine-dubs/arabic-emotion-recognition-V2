@@ -109,25 +109,8 @@ def load_models():
         
         # Try to load evaluation results if they exist
         try:
-            evaluation_results = None
-            if os.path.exists('evaluation_results.joblib'):
-                evaluation_results = joblib.load('evaluation_results.joblib')
-                
-                # Fix matplotlib figure serialization issues in Streamlit Cloud
-                # Remove matplotlib figure objects which can't be properly serialized
-                if evaluation_results is not None:
-                    keys_to_check = [
-                        'confusion_matrix_fig', 
-                        'accuracy_by_emotion_fig',
-                        'feature_importance_fig'
-                    ]
-                    
-                    for key in keys_to_check:
-                        if key in evaluation_results:
-                            # Remove the figure object to avoid serialization issues
-                            evaluation_results[key] = None
-        except Exception as e:
-            st.warning(f"Error loading evaluation results: {str(e)}")
+            evaluation_results = joblib.load('evaluation_results.joblib') if os.path.exists('evaluation_results.joblib') else None
+        except:
             evaluation_results = None
         
         return scaler, knn_model, selected_indices, evaluation_results
