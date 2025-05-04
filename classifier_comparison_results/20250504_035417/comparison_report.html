@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Classifier Comparison Results</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h1, h2 { color: #2c3e50; }
+        table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        img { max-width: 100%; height: auto; margin: 10px 0; }
+        .section { margin-bottom: 30px; }
+        .image-gallery { display: flex; flex-wrap: wrap; gap: 10px; }
+        .image-card { border: 1px solid #ddd; padding: 10px; border-radius: 5px; width: 300px; }
+    </style>
+</head>
+<body>
+    <h1>Arabic Emotion Recognition - Classifier Comparison</h1>
+    <p>Generated on: 2025-05-04 03:54:47</p>
+    
+    <div class="section">
+        <h2>Performance Summary</h2>
+        <p>Top performing classifiers by test accuracy:</p>
+    <table><tr><th>Rank</th><th>Classifier</th><th>Features</th><th>Test Accuracy</th><th>F1 Score</th><th>Training Time (s)</th></tr><tr><td>1</td><td>Random Forest</td><td>500</td><td>0.4236</td><td>0.4224</td><td>0.41</td></tr><tr><td>2</td><td>KNN</td><td>1045</td><td>0.4167</td><td>0.4121</td><td>0.00</td></tr><tr><td>3</td><td>MLP</td><td>500</td><td>0.4097</td><td>0.4101</td><td>1.98</td></tr><tr><td>4</td><td>KNN</td><td>500</td><td>0.4028</td><td>0.3984</td><td>0.00</td></tr><tr><td>5</td><td>SVM</td><td>500</td><td>0.4028</td><td>0.4018</td><td>0.80</td></tr></table>
+    <div class="section">
+        <h2>Summary Plots</h2>
+        <img src="test_accuracy_comparison.png" alt="Test Accuracy Comparison">
+        <img src="f1_score_comparison.png" alt="F1 Score Comparison">
+        <img src="training_time_comparison.png" alt="Training Time Comparison">
+        <img src="prediction_time_comparison.png" alt="Prediction Time Comparison">
+    </div>
+    
+    <div class="section">
+        <h2>Confusion Matrices</h2>
+        <p>Click on images to view larger versions</p>
+        <div class="image-gallery">
+    <div class="image-card"><a href="confusion_matrices\confusion_matrix_KNN_f100.png" target="_blank"><img src="confusion_matrices\confusion_matrix_KNN_f100.png" alt="KNN f100"></a><p>KNN f100</p></div><div class="image-card"><a href="confusion_matrices\confusion_matrix_KNN_f1045.png" target="_blank"><img src="confusion_matrices\confusion_matrix_KNN_f1045.png" alt="KNN f1045"></a><p>KNN f1045</p></div><div class="image-card"><a href="confusion_matrices\confusion_matrix_KNN_f200.png" target="_blank"><img src="confusion_matrices\confusion_matrix_KNN_f200.png" alt="KNN f200"></a><p>KNN f200</p></div><div class="image-card"><a href="confusion_matrices\confusion_matrix_KNN_f500.png" target="_blank"><img src="confusion_matrices\confusion_matrix_KNN_f500.png" alt="KNN f500"></a><p>KNN f500</p></div><div class="image-card"><a href="confusion_matrices\confusion_matrix_MLP_f100.png" target="_blank"><img src="confusion_matrices\confusion_matrix_MLP_f100.png" alt="MLP f100"></a><p>MLP f100</p></div><div class="image-card"><a href="confusion_matrices\confusion_matrix_MLP_f1045.png" target="_blank"><img src="confusion_matrices\confusion_matrix_MLP_f1045.png" alt="MLP f1045"></a><p>MLP f1045</p></div><div class="image-card"><a href="confusion_matrices\confusion_matrix_MLP_f200.png" target="_blank"><img src="confusion_matrices\confusion_matrix_MLP_f200.png" alt="MLP f200"></a><p>MLP f200</p></div><div class="image-card"><a href="confusion_matrices\confusion_matrix_MLP_f500.png" target="_blank"><img src="confusion_matrices\confusion_matrix_MLP_f500.png" alt="MLP f500"></a><p>MLP f500</p></div><div class="image-card"><a href="confusion_matrices\confusion_matrix_Random_Forest_f100.png" target="_blank"><img src="confusion_matrices\confusion_matrix_Random_Forest_f100.png" alt="Random Forest f100"></a><p>Random Forest f100</p></div><div class="image-card"><a href="confusion_matrices\confusion_matrix_Random_Forest_f1045.png" target="_blank"><img src="confusion_matrices\confusion_matrix_Random_Forest_f1045.png" alt="Random Forest f1045"></a><p>Random Forest f1045</p></div><div class="image-card"><a href="confusion_matrices\confusion_matrix_Random_Forest_f200.png" target="_blank"><img src="confusion_matrices\confusion_matrix_Random_Forest_f200.png" alt="Random Forest f200"></a><p>Random Forest f200</p></div><div class="image-card"><a href="confusion_matrices\confusion_matrix_Random_Forest_f500.png" target="_blank"><img src="confusion_matrices\confusion_matrix_Random_Forest_f500.png" alt="Random Forest f500"></a><p>Random Forest f500</p></div><div class="image-card"><a href="confusion_matrices\confusion_matrix_SVM_f100.png" target="_blank"><img src="confusion_matrices\confusion_matrix_SVM_f100.png" alt="SVM f100"></a><p>SVM f100</p></div><div class="image-card"><a href="confusion_matrices\confusion_matrix_SVM_f1045.png" target="_blank"><img src="confusion_matrices\confusion_matrix_SVM_f1045.png" alt="SVM f1045"></a><p>SVM f1045</p></div><div class="image-card"><a href="confusion_matrices\confusion_matrix_SVM_f200.png" target="_blank"><img src="confusion_matrices\confusion_matrix_SVM_f200.png" alt="SVM f200"></a><p>SVM f200</p></div><div class="image-card"><a href="confusion_matrices\confusion_matrix_SVM_f500.png" target="_blank"><img src="confusion_matrices\confusion_matrix_SVM_f500.png" alt="SVM f500"></a><p>SVM f500</p></div>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h2>ROC Curves</h2>
+        <p>Click on images to view larger versions</p>
+        <div class="image-gallery">
+    <div class="image-card"><a href="roc_curves\roc_curves_KNN_f100.png" target="_blank"><img src="roc_curves\roc_curves_KNN_f100.png" alt="KNN f100"></a><p>KNN f100</p></div><div class="image-card"><a href="roc_curves\roc_curves_KNN_f1045.png" target="_blank"><img src="roc_curves\roc_curves_KNN_f1045.png" alt="KNN f1045"></a><p>KNN f1045</p></div><div class="image-card"><a href="roc_curves\roc_curves_KNN_f200.png" target="_blank"><img src="roc_curves\roc_curves_KNN_f200.png" alt="KNN f200"></a><p>KNN f200</p></div><div class="image-card"><a href="roc_curves\roc_curves_KNN_f500.png" target="_blank"><img src="roc_curves\roc_curves_KNN_f500.png" alt="KNN f500"></a><p>KNN f500</p></div><div class="image-card"><a href="roc_curves\roc_curves_MLP_f100.png" target="_blank"><img src="roc_curves\roc_curves_MLP_f100.png" alt="MLP f100"></a><p>MLP f100</p></div><div class="image-card"><a href="roc_curves\roc_curves_MLP_f1045.png" target="_blank"><img src="roc_curves\roc_curves_MLP_f1045.png" alt="MLP f1045"></a><p>MLP f1045</p></div><div class="image-card"><a href="roc_curves\roc_curves_MLP_f200.png" target="_blank"><img src="roc_curves\roc_curves_MLP_f200.png" alt="MLP f200"></a><p>MLP f200</p></div><div class="image-card"><a href="roc_curves\roc_curves_MLP_f500.png" target="_blank"><img src="roc_curves\roc_curves_MLP_f500.png" alt="MLP f500"></a><p>MLP f500</p></div><div class="image-card"><a href="roc_curves\roc_curves_Random_Forest_f100.png" target="_blank"><img src="roc_curves\roc_curves_Random_Forest_f100.png" alt="Random Forest f100"></a><p>Random Forest f100</p></div><div class="image-card"><a href="roc_curves\roc_curves_Random_Forest_f1045.png" target="_blank"><img src="roc_curves\roc_curves_Random_Forest_f1045.png" alt="Random Forest f1045"></a><p>Random Forest f1045</p></div><div class="image-card"><a href="roc_curves\roc_curves_Random_Forest_f200.png" target="_blank"><img src="roc_curves\roc_curves_Random_Forest_f200.png" alt="Random Forest f200"></a><p>Random Forest f200</p></div><div class="image-card"><a href="roc_curves\roc_curves_Random_Forest_f500.png" target="_blank"><img src="roc_curves\roc_curves_Random_Forest_f500.png" alt="Random Forest f500"></a><p>Random Forest f500</p></div><div class="image-card"><a href="roc_curves\roc_curves_SVM_f100.png" target="_blank"><img src="roc_curves\roc_curves_SVM_f100.png" alt="SVM f100"></a><p>SVM f100</p></div><div class="image-card"><a href="roc_curves\roc_curves_SVM_f1045.png" target="_blank"><img src="roc_curves\roc_curves_SVM_f1045.png" alt="SVM f1045"></a><p>SVM f1045</p></div><div class="image-card"><a href="roc_curves\roc_curves_SVM_f200.png" target="_blank"><img src="roc_curves\roc_curves_SVM_f200.png" alt="SVM f200"></a><p>SVM f200</p></div><div class="image-card"><a href="roc_curves\roc_curves_SVM_f500.png" target="_blank"><img src="roc_curves\roc_curves_SVM_f500.png" alt="SVM f500"></a><p>SVM f500</p></div>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h2>Complete Results</h2>
+        <p>See <a href="classifier_comparison_results.csv">classifier_comparison_results.csv</a> for the complete results data.</p>
+    </div>
+</body>
+</html>
+    

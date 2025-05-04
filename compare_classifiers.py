@@ -14,6 +14,13 @@ from sklearn.neural_network import MLPClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
 import seaborn as sns
+import datetime
+
+# Create a results directory with timestamp
+timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+results_dir = os.path.join("classifier_comparison_results", timestamp)
+os.makedirs(results_dir, exist_ok=True)
+print(f"Results will be saved in: {results_dir}")
 
 # Define paths for data files
 DATA_CACHE_PATH = 'data_df.pkl'
@@ -84,6 +91,12 @@ feature_counts = [100, 200, 500, len(selected_indices)]  # Original count and re
 
 results = []
 
+# Create subdirectories for confusion matrices and ROC curves
+cm_dir = os.path.join(results_dir, "confusion_matrices")
+roc_dir = os.path.join(results_dir, "roc_curves")
+os.makedirs(cm_dir, exist_ok=True)
+os.makedirs(roc_dir, exist_ok=True)
+
 for feature_count in feature_counts:
     # Select top N features only
     feature_subset = selected_indices[:feature_count]
@@ -141,7 +154,8 @@ for feature_count in feature_counts:
         plt.xlabel('Predicted Label')
         plt.ylabel('True Label')
         plt.tight_layout()
-        plt.savefig(f'confusion_matrix_{name.replace(" ", "_")}_f{feature_count}.png')
+        cm_filename = f'confusion_matrix_{name.replace(" ", "_")}_f{feature_count}.png'
+        plt.savefig(os.path.join(cm_dir, cm_filename))
         plt.close()
         
         # Generate ROC curves (with error handling)
@@ -191,7 +205,8 @@ for feature_count in feature_counts:
                 plt.title(f'ROC Curves - {name} with {feature_count} features')
                 plt.legend(loc="lower right")
                 plt.grid(True, alpha=0.3)
-                plt.savefig(f'roc_curves_{name.replace(" ", "_")}_f{feature_count}.png')
+                roc_filename = f'roc_curves_{name.replace(" ", "_")}_f{feature_count}.png'
+                plt.savefig(os.path.join(roc_dir, roc_filename))
                 plt.close()
                 print(f"ROC curves generated successfully for {name}")
             else:
@@ -203,8 +218,9 @@ for feature_count in feature_counts:
 results_df = pd.DataFrame(results)
 
 # Save results to CSV
-results_df.to_csv('classifier_comparison_results.csv', index=False)
-print("\nSaved results to classifier_comparison_results.csv")
+results_csv = os.path.join(results_dir, 'classifier_comparison_results.csv')
+results_df.to_csv(results_csv, index=False)
+print(f"\nSaved results to {results_csv}")
 
 # Create summary plots
 plt.figure(figsize=(12, 8))
@@ -212,7 +228,8 @@ sns.barplot(data=results_df, x='Classifier', y='Test Accuracy', hue='Features')
 plt.title('Test Accuracy by Classifier and Feature Count')
 plt.xticks(rotation=45)
 plt.tight_layout()
-plt.savefig('test_accuracy_comparison.png')
+test_acc_plot = os.path.join(results_dir, 'test_accuracy_comparison.png')
+plt.savefig(test_acc_plot)
 plt.close()
 
 plt.figure(figsize=(12, 8))
@@ -220,6 +237,123 @@ sns.barplot(data=results_df, x='Classifier', y='F1 Score', hue='Features')
 plt.title('F1 Score by Classifier and Feature Count')
 plt.xticks(rotation=45)
 plt.tight_layout()
-plt.savefig('f1_score_comparison.png')
+f1_plot = os.path.join(results_dir, 'f1_score_comparison.png')
+plt.savefig(f1_plot)
+plt.close()
 
-print("\nSummary plots generated. Check the output directory for results.")
+# Create additional plots for time comparison
+plt.figure(figsize=(12, 8))
+sns.barplot(data=results_df, x='Classifier', y='Training Time', hue='Features')
+plt.title('Training Time by Classifier and Feature Count')
+plt.xticks(rotation=45)
+plt.ylabel('Time (seconds)')
+plt.tight_layout()
+train_time_plot = os.path.join(results_dir, 'training_time_comparison.png')
+plt.savefig(train_time_plot)
+plt.close()
+
+plt.figure(figsize=(12, 8))
+sns.barplot(data=results_df, x='Classifier', y='Prediction Time', hue='Features')
+plt.title('Prediction Time by Classifier and Feature Count')
+plt.xticks(rotation=45)
+plt.ylabel('Time (seconds)')
+plt.tight_layout()
+pred_time_plot = os.path.join(results_dir, 'prediction_time_comparison.png')
+plt.savefig(pred_time_plot)
+plt.close()
+
+# Create a summary HTML report
+html_report = os.path.join(results_dir, 'comparison_report.html')
+with open(html_report, 'w') as f:
+    f.write('''<!DOCTYPE html>
+<html>
+<head>
+    <title>Classifier Comparison Results</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h1, h2 { color: #2c3e50; }
+        table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        img { max-width: 100%; height: auto; margin: 10px 0; }
+        .section { margin-bottom: 30px; }
+        .image-gallery { display: flex; flex-wrap: wrap; gap: 10px; }
+        .image-card { border: 1px solid #ddd; padding: 10px; border-radius: 5px; width: 300px; }
+    </style>
+</head>
+<body>
+    <h1>Arabic Emotion Recognition - Classifier Comparison</h1>
+    <p>Generated on: ''' + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + '''</p>
+    
+    <div class="section">
+        <h2>Performance Summary</h2>
+        <p>Top performing classifiers by test accuracy:</p>
+    ''')
+    
+    # Add top performers
+    top_performers = results_df.sort_values(by='Test Accuracy', ascending=False).head(5)
+    f.write("<table>")
+    f.write("<tr><th>Rank</th><th>Classifier</th><th>Features</th><th>Test Accuracy</th><th>F1 Score</th><th>Training Time (s)</th></tr>")
+    for i, (_, row) in enumerate(top_performers.iterrows()):
+        f.write(f"<tr><td>{i+1}</td><td>{row['Classifier']}</td><td>{row['Features']}</td>")
+        f.write(f"<td>{row['Test Accuracy']:.4f}</td><td>{row['F1 Score']:.4f}</td><td>{row['Training Time']:.2f}</td></tr>")
+    f.write("</table>")
+    
+    # Add summary plots
+    f.write('''
+    <div class="section">
+        <h2>Summary Plots</h2>
+        <img src="test_accuracy_comparison.png" alt="Test Accuracy Comparison">
+        <img src="f1_score_comparison.png" alt="F1 Score Comparison">
+        <img src="training_time_comparison.png" alt="Training Time Comparison">
+        <img src="prediction_time_comparison.png" alt="Prediction Time Comparison">
+    </div>
+    
+    <div class="section">
+        <h2>Confusion Matrices</h2>
+        <p>Click on images to view larger versions</p>
+        <div class="image-gallery">
+    ''')
+    
+    # Add confusion matrix images
+    for filename in sorted(os.listdir(cm_dir)):
+        if filename.endswith('.png'):
+            relative_path = os.path.join('confusion_matrices', filename)
+            classifier_name = filename.replace('confusion_matrix_', '').replace('.png', '').replace('_', ' ')
+            f.write(f'<div class="image-card"><a href="{relative_path}" target="_blank"><img src="{relative_path}" alt="{classifier_name}"></a>')
+            f.write(f'<p>{classifier_name}</p></div>')
+    
+    f.write('''
+        </div>
+    </div>
+    
+    <div class="section">
+        <h2>ROC Curves</h2>
+        <p>Click on images to view larger versions</p>
+        <div class="image-gallery">
+    ''')
+    
+    # Add ROC curve images
+    for filename in sorted(os.listdir(roc_dir)):
+        if filename.endswith('.png'):
+            relative_path = os.path.join('roc_curves', filename)
+            classifier_name = filename.replace('roc_curves_', '').replace('.png', '').replace('_', ' ')
+            f.write(f'<div class="image-card"><a href="{relative_path}" target="_blank"><img src="{relative_path}" alt="{classifier_name}"></a>')
+            f.write(f'<p>{classifier_name}</p></div>')
+    
+    f.write('''
+        </div>
+    </div>
+    
+    <div class="section">
+        <h2>Complete Results</h2>
+        <p>See <a href="classifier_comparison_results.csv">classifier_comparison_results.csv</a> for the complete results data.</p>
+    </div>
+</body>
+</html>
+    ''')
+
+print(f"\nResults saved to {results_dir}")
+print(f"Summary report generated at: {html_report}")
+print("Open the HTML report to view a comprehensive summary of the comparison results.")
