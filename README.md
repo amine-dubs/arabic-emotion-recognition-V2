@@ -2,9 +2,54 @@
 
 This project implements an emotion recognition system for Arabic audio signals that can detect four distinct emotions: Angry, Happy, Neutral, and Sad. Using a sophisticated pipeline of spectrogram generation, feature extraction with ResNet50, and intelligent feature selection, the system achieves efficient and accurate emotion classification from Arabic speech.
 
+## Summary of Approaches and Results
+
+This section details the various methods explored to improve emotion recognition accuracy.
+
+### Initial Approach: ResNet50 + SCA-KNN
+- **Problem**: Fitness function for SCA stagnated around 0.6, even with 200 iterations.
+- **Result**: Maximum accuracy achieved was approximately 45%.
+
+### Explored Solutions & Enhancements:
+
+1.  **Equilibrium Optimizer (EO) instead of SCA (with KNN)**:
+    *   **Result**: Slightly improved accuracy by ~0.3% to around 47%.
+    *   **Observation**: Experienced stagnation after initial improvements in early iterations.
+
+2.  **K-Nearest Neighbors (KNN) with Cosine Similarity (instead of Euclidean)**:
+    *   **Result**: 39% accuracy with unscaled data (100 iterations).
+
+3.  **Using F1-score as Fitness Metric (instead of accuracy for feature selection)**:
+    *   **Result**: 42% accuracy.
+
+4.  **Sine Cosine Algorithm (SCA) with Random Forest (instead of KNN, with validation split)**:
+    *   **Result**: 45% accuracy with unscaled data.
+
+5.  **ResNet Feature Permutation (before splitting and feature selection)**:
+    *   **Result**: 39% accuracy.
+
+### Alternative Models & Benchmarks:
+
+-   **Parallel CNN optimising the conv using EO:
+    *   **Result**: not implimented yet
+    *   Details and optimization of convolutional layers.
+    *   *Reference*: [Kaggle - EAED using Parallel CNN Transformer](https://www.kaggle.com/code/mohammedhassanain/eaed-using-parallel-cnn-transformer/notebook)
+
+-   **Wav2Vec2.0**:
+    *   **Result**: Achieved 70% accuracy on the EYASE dataset.
+    *   *Reference*: [Kaggle - EYASE Wav2Vec2.0](https://www.kaggle.com/code/mohammedhassanain/eyase-wav2vec2-0)
+
+### Potential Future Directions:
+
+-   **Alternative Feature Extractors**:
+    *   Experiment with EfficientNet or MobileNet as alternatives to ResNet50.
+-   **Optimized Feature Permutation and Selection**:
+    *   Further investigate the impact of feature permutation followed by optimization algorithms like EO for feature selection.
+-   **Dynamic Threshold for Feature Selection**:
+    *   Instead of a fixed 0.5 threshold for binary feature selection, explore a dynamic threshold (e.g., adding an extra parameter to the SCA/EO solution space, making it 2048 features + 1 threshold parameter).
+
 <p align="center">
   <img src="confusion_matrix.png" alt="Confusion Matrix" width="400"/>
-</p>
 
 ## Project Goal
 
