@@ -374,7 +374,17 @@ class ParallelModel(nn.Module):
         self.transf_heads = int(params.get('transf_heads', 4))
         # Always use exactly 4 transformer layers as requested
         self.transf_layers = 4
-        self.transf_dim = int(params.get('transf_dim', 64))
+        # Make sure transformer dimension is divisible by number of heads
+        self.transf_dim_original = int(params.get('transf_dim', 64))
+        # Adjust transformer dimension to be divisible by number of heads
+        self.transf_dim = (self.transf_dim_original // self.transf_heads) * self.transf_heads
+        # Ensure minimum size
+        if self.transf_dim < self.transf_heads:
+            self.transf_dim = self.transf_heads
+        # Log the adjustment if it was made
+        if self.transf_dim != self.transf_dim_original:
+            print(f"Adjusted transformer dimension from {self.transf_dim_original} to {self.transf_dim} to be divisible by {self.transf_heads} heads")
+        
         self.transf_ff_dim = int(params.get('transf_ff_dim', 512))
         
         # Conv block
@@ -684,23 +694,27 @@ def train_cnn_with_params(params, X_train, Y_train, X_val, Y_val, device, epochs
 
 # Objective function for EO to optimize CNN parameters
 def fitness_function(solution):
-    """Fitness function for Equilibrium Optimizer to minimize."""    # Map solution vector to CNN parameters
-    # Calculate number of heads first - using fixed 4 heads for faster convergence
-    transf_heads = 4  # Fixed at 4 heads for faster optimization
+    """Fitness function for Equilibrium Optimizer to minimize."""    
+    # Map solution vector to CNN parameters
+    # Calculate number of heads first - we'll use fixed heads for optimization
+    transf_heads = 6  # Using 6 heads because that's what was seen in the error
     
     # Make sure transformer dimension is divisible by number of heads
     # Base dimension = 32, max multiplier = 8 (32*8 = 256)
     transf_dim_base = 32
     transf_dim_max_multiplier = 8
     transf_dim_multiplier = int(1 + solution[8] * (transf_dim_max_multiplier - 1))
-    # Make sure the dimension is divisible by the number of heads
-    transf_dim = transf_dim_base * transf_dim_multiplier
-    # Ensure divisibility
-    if transf_dim % transf_heads != 0:
-    # Adjust dimension to be divisible by number of heads
-        transf_dim = (transf_dim // transf_heads) * transf_heads
-        if transf_dim == 0:
-            transf_dim = transf_heads  # Minimum dimension = number of heads
+    
+    # Calculate dimension and explicitly ensure divisibility
+    transf_dim_raw = transf_dim_base * transf_dim_multiplier
+    transf_dim = (transf_dim_raw // transf_heads) * transf_heads
+    
+    # Make sure dimension is at least equal to number of heads
+    if transf_dim < transf_heads:
+        transf_dim = transf_heads  # Minimum dimension = number of heads
+    
+    # Debug information
+    print(f"Transformer heads: {transf_heads}, raw dimension: {transf_dim_raw}, adjusted dimension: {transf_dim}")
     
     params = {
         'conv1_filters': int(16 * (1 + solution[0] * 3)),  # 16-64 filters
@@ -880,8 +894,19 @@ if not SKIP_TRAINING and not os.path.exists(INDICES_CACHE_PATH_EO):
         plt.close()
     except Exception as e:
         print(f"Could not extract or plot convergence history: {e}")
+      # Map best solution to CNN parameters
+    # Calculate number of heads first
+    transf_heads = int(1 + best_position[6] * 7)
     
-    # Map best solution to CNN parameters
+    # Calculate transformer dimension with explicit handling for divisibility by heads
+    transf_dim_base = 32
+    transf_dim_multiplier = int(1 + best_position[8] * 7)
+    transf_dim_raw = transf_dim_base * transf_dim_multiplier
+    # Adjust to make divisible by number of heads
+    transf_dim = (transf_dim_raw // transf_heads) * transf_heads
+    if transf_dim < transf_heads:  # Make sure it's at least as large as the number of heads
+        transf_dim = transf_heads
+        
     best_params = {
         'conv1_filters': int(16 * (1 + best_position[0] * 3)),
         'conv2_filters': int(32 * (1 + best_position[1] * 3)),
@@ -889,9 +914,9 @@ if not SKIP_TRAINING and not os.path.exists(INDICES_CACHE_PATH_EO):
         'conv4_filters': int(64 * (1 + best_position[3] * 3)),
         'kernel_size': int(2 + best_position[4] * 3),
         'dropout_rate': 0.2 + best_position[5] * 0.4,
-        'transf_heads': int(1 + best_position[6] * 7),
+        'transf_heads': transf_heads,
         'transf_layers': 4,  # Fixed at 4 layers as requested
-        'transf_dim': int(32 * (1 + best_position[8] * 7)),
+        'transf_dim': transf_dim,  # Adjusted to be divisible by heads
         'learning_rate': 0.001 + best_position[9] * 0.049,
         'weight_decay': 0.0001 + best_position[10] * 0.005,
         'momentum': 0.7 + best_position[11] * 0.25,
@@ -902,7 +927,20 @@ if not SKIP_TRAINING and not os.path.exists(INDICES_CACHE_PATH_EO):
 elif os.path.exists(INDICES_CACHE_PATH_EO):
     # Load cached best hyperparameters
     best_position = np.load(INDICES_CACHE_PATH_EO)
-      # Map best solution to CNN parameters
+    
+    # Calculate number of heads first
+    transf_heads = int(1 + best_position[6] * 7)
+    
+    # Calculate transformer dimension with explicit handling for divisibility by heads
+    transf_dim_base = 32
+    transf_dim_multiplier = int(1 + best_position[8] * 7)
+    transf_dim_raw = transf_dim_base * transf_dim_multiplier
+    # Adjust to make divisible by number of heads
+    transf_dim = (transf_dim_raw // transf_heads) * transf_heads
+    if transf_dim < transf_heads:  # Make sure it's at least as large as the number of heads
+        transf_dim = transf_heads
+      
+    # Map best solution to CNN parameters
     best_params = {
         'conv1_filters': int(16 * (1 + best_position[0] * 3)),
         'conv2_filters': int(32 * (1 + best_position[1] * 3)),
@@ -910,9 +948,9 @@ elif os.path.exists(INDICES_CACHE_PATH_EO):
         'conv4_filters': int(64 * (1 + best_position[3] * 3)),
         'kernel_size': int(2 + best_position[4] * 3),
         'dropout_rate': 0.2 + best_position[5] * 0.4,
-        'transf_heads': int(1 + best_position[6] * 7),
+        'transf_heads': transf_heads,
         'transf_layers': 4,  # Fixed at 4 layers as requested
-        'transf_dim': int(32 * (1 + best_position[8] * 7)),
+        'transf_dim': transf_dim,  # Adjusted to be divisible by heads
         'learning_rate': 0.001 + best_position[9] * 0.049,
         'weight_decay': 0.0001 + best_position[10] * 0.005,
         'momentum': 0.7 + best_position[11] * 0.25,
@@ -922,6 +960,9 @@ elif os.path.exists(INDICES_CACHE_PATH_EO):
     
 else:
     # Default parameters if no optimization was done
+    transf_heads = 4
+    transf_dim = 64  # Ensure divisibility: 64 ÷ 4 = 16
+    
     best_params = {
         'conv1_filters': 16,
         'conv2_filters': 32,
@@ -929,9 +970,9 @@ else:
         'conv4_filters': 64,
         'kernel_size': 3,
         'dropout_rate': 0.3,
-        'transf_heads': 4,
+        'transf_heads': transf_heads,
         'transf_layers': 4,
-        'transf_dim': 64,
+        'transf_dim': transf_dim,
         'learning_rate': 0.01,
         'weight_decay': 0.001,
         'momentum': 0.8,
