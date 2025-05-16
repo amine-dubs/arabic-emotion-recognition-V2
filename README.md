@@ -32,7 +32,7 @@ This section details the various methods explored to improve emotion recognition
 
 -   **Parallel CNN optimising the conv using EO:
     *   **Result**: Accuracy: 80.84%
-    *   Details and optimization of convolutional layers. implimentation in "Parallel cnn eo" folder
+    *   Details and optimization of convolutional layers. implimentation in ["Parallel cnn eo" folder](https://github.com/amine-dubs/arabic-emotion-recognition-V2/tree/main/Parallel%20cnn%20eo)
     *   *Reference*: [Kaggle - EAED using Parallel CNN Transformer](https://www.kaggle.com/code/mohammedhassanain/eaed-using-parallel-cnn-transformer/notebook)
 
 -   **Wav2Vec2.0**:
